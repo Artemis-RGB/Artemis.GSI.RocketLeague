@@ -11,7 +11,7 @@ void ArtemisGSI::onLoad()
 	_globalCvarManager = cvarManager;
 
 	artemisClient = new httplib::Client("http://localhost:9696");
-	artemisClient->set_connection_timeout(0, 100000);
+	artemisClient->set_connection_timeout(0, 50000);
 
 	this->StartLoop();
 	//cvarManager->log("Plugin loaded!");
@@ -77,11 +77,11 @@ void ArtemisGSI::UpdateMatchState() {
 }
 
 void ArtemisGSI::SendToArtemis(std::string data) {
-	try {
-		artemisClient->Post("/plugins/945dc0aa-7ee3-47ec-9be6-f378fb7cb7b0/update", data, "application/json");
-	}
-	catch (...) {
-		cvarManager->log("stopping...");
+
+	auto response = artemisClient->Post("/plugins/945dc0aa-7ee3-47ec-9be6-f378fb7cb7b0/update", data, "application/json");
+
+	if (!response) {
+		cvarManager->log("Error sending data to Artemis, stopping...");
 		ok = false;
 	}
 }

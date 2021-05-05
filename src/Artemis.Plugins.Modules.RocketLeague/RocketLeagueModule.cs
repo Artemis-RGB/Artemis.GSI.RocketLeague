@@ -2,6 +2,7 @@
 using Artemis.Core.Modules;
 using Artemis.Core.Services;
 using SkiaSharp;
+using System;
 
 namespace Artemis.Plugins.Modules.RocketLeague
 {
@@ -20,17 +21,29 @@ namespace Artemis.Plugins.Modules.RocketLeague
             DisplayIcon = "RocketLeague.svg";
             DefaultPriorityCategory = ModulePriorityCategory.Application;
             ActivationRequirements.Add(new ProcessActivationRequirement("RocketLeague"));
-            //_webServerService.AddStringEndPoint(this, "update", s => 
-            //{
 
-            //});
+            var request = _webServerService.AddDataModelJsonEndPoint(this, "update");
+            request.ProcessedRequest += OnProcessedRequest;
+        }
 
-            _webServerService.AddJsonEndPoint<RocketLeagueDataModel>(this, "update", s =>
+        private void OnProcessedRequest(object sender, EndpointRequestEventArgs e)
+        {
+            if (DataModel.Player == null)
             {
-                DataModel.Status = s.Status;
-                DataModel.Match = s.Match;
-                DataModel.Player = s.Player;
-            });
+                DataModel.Match.MyTeam = null;
+                DataModel.Match.OpponentTeam = null;
+            }
+
+            if (DataModel.Player.Team == 0)
+            {
+                DataModel.Match.MyTeam = DataModel.Match.Team_0;
+                DataModel.Match.OpponentTeam= DataModel.Match.Team_1;
+            }
+            else
+            {
+                DataModel.Match.MyTeam = DataModel.Match.Team_1;
+                DataModel.Match.OpponentTeam = DataModel.Match.Team_0;
+            }
         }
 
         public override void Disable()

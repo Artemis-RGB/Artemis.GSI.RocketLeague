@@ -3,7 +3,7 @@ using SkiaSharp;
 
 namespace Artemis.Plugins.Modules.RocketLeague
 {
-    internal struct RocketLeagueColor
+    public struct RocketLeagueColor
     {
         public byte Red { get; set; }
         public byte Green { get; set; }

@@ -3,17 +3,14 @@
 
 BAKKESMOD_PLUGIN(ArtemisGSI, "Artemis RGB integration", plugin_version, PLUGINTYPE_THREADED)
 
-std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
-
-
 void ArtemisGSI::onLoad()
 {
-	_globalCvarManager = cvarManager;
-
 	artemisClient = new httplib::Client("http://localhost:9696");
 	artemisClient->set_connection_timeout(0, 50000);
 
-	this->StartLoop();
+	std::thread t(&ArtemisGSI::StartLoop, this);
+	t.detach();
+
 	//cvarManager->log("Plugin loaded!");
 
 	//cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
@@ -54,14 +51,14 @@ void ArtemisGSI::onUnload()
 }
 
 void ArtemisGSI::StartLoop() {
-	if (ok) {
+	while (ok) {
 		gameWrapper->Execute(std::bind(&ArtemisGSI::UpdateMatchState, this));
 		std::string newJson = GameState.GetJson().dump();
 		if (newJson != json) {
 			json = newJson;
 			SendToArtemis(json);
 		}
-		this->gameWrapper->SetTimeout(std::bind(&ArtemisGSI::StartLoop, this), 0.05f);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
 	}
 }
 
@@ -77,7 +74,6 @@ void ArtemisGSI::UpdateMatchState() {
 }
 
 void ArtemisGSI::SendToArtemis(std::string data) {
-
 	auto response = artemisClient->Post("/plugins/945dc0aa-7ee3-47ec-9be6-f378fb7cb7b0/update", data, "application/json");
 
 	if (!response) {

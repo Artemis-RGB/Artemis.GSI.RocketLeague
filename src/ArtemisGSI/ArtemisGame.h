@@ -1,7 +1,7 @@
 #pragma once
 #include "ArtemisMatch.h"
 #include "ArtemisPlayer.h"
-
+#include "ArtemisCar.h"
 
 enum class GameStatus
 {
@@ -18,6 +18,7 @@ class ArtemisGame
 public:
 	ArtemisMatch Match;
 	ArtemisPlayer Player;
+	ArtemisCar Car;
 	GameStatus Status;
 
 	nlohmann::json GetJson();

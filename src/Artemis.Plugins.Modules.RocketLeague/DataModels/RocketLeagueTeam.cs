@@ -5,8 +5,8 @@ namespace Artemis.Plugins.Modules.RocketLeague
 {
     public class RocketLeagueTeam
     {
-        public int Goals { get; set; }
         public string Name { get; set; }
+        public int Goals { get; set; }
 
         [DataModelIgnore]
         public RocketLeagueColor PrimaryColor { get; set; }
@@ -15,5 +15,9 @@ namespace Artemis.Plugins.Modules.RocketLeague
         [DataModelIgnore]
         public RocketLeagueColor SecondaryColor { get; set; }
         public SKColor Secondary => new(SecondaryColor.Red, SecondaryColor.Green, SecondaryColor.Blue);
+
+        [DataModelIgnore]
+        public RocketLeagueColor FontColor { get; set; }
+        public SKColor Font => new(FontColor.Red, FontColor.Green, FontColor.Blue);
     }
 }

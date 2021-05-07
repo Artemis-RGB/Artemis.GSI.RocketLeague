@@ -7,6 +7,7 @@ nlohmann::json ArtemisGame::GetJson()
 	data["status"] = Status;
 	data["player"] = Player.GetJson();
 	data["match"] = Match.GetJson();
+	data["car"] = Car.GetJson();
 
 	return data;
 }

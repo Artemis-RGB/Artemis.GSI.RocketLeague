@@ -61,7 +61,7 @@ void ArtemisGSI::StartLoop() {
 			json = newJson;
 			SendToArtemis(json);
 		}
-		this->gameWrapper->SetTimeout(std::bind(&ArtemisGSI::StartLoop, this), 0.1f);
+		this->gameWrapper->SetTimeout(std::bind(&ArtemisGSI::StartLoop, this), 0.05f);
 	}
 }
 
@@ -95,20 +95,24 @@ void ArtemisGSI::UpdateState(ServerWrapper wrapper)
 
 	ArrayWrapper<TeamWrapper> teams = wrapper.GetTeams();
 	for (int i = 0; i < teams.Count(); i++) {
-		if (teams.Get(i).IsNull()) continue;
 
-		GameState.Match.Teams[i].Goals = teams.Get(i).GetScore();
+		auto team = teams.Get(i);
+		if (team.IsNull()) continue;
 
-		if (!teams.Get(i).GetSanitizedTeamName().IsNull())
-			GameState.Match.Teams[i].Name = teams.Get(i).GetSanitizedTeamName().ToString();
+		GameState.Match.Teams[i].Goals = team.GetScore();
+
+		if (!team.GetSanitizedTeamName().IsNull())
+			GameState.Match.Teams[i].Name = team.GetSanitizedTeamName().ToString();
 		else
 			GameState.Match.Teams[i].Name = i == 0 ? "Blue" : "Orange";
 
-		auto primaryColor = teams.Get(i).GetPrimaryColor();
-		auto secondaryColor = teams.Get(i).GetSecondaryColor();
+		auto primaryColor = team.GetPrimaryColor();
+		auto secondaryColor = team.GetSecondaryColor();
+		auto fontColor = team.GetFontColor();
 
 		GameState.Match.Teams[i].PrimaryColor.SetValues(primaryColor);
 		GameState.Match.Teams[i].SecondaryColor.SetValues(secondaryColor);
+		GameState.Match.Teams[i].FontColor.SetValues(fontColor);
 	}
 
 	auto localController = this->gameWrapper->GetPlayerController();
@@ -120,16 +124,30 @@ void ArtemisGSI::UpdateState(ServerWrapper wrapper)
 			GameState.Player.Assists = local.GetMatchAssists();
 			GameState.Player.Saves = local.GetMatchSaves();
 			GameState.Player.Shots = local.GetMatchShots();
+			GameState.Player.BallTouches = local.GetBallTouches();
+			GameState.Player.CarTouches = local.GetCarTouches();
+			GameState.Player.Demolishes = local.GetMatchDemolishes();
 
 			if (!local.GetTeam().IsNull())
 				GameState.Player.Team = local.GetTeam().GetTeamIndex();
 			else
 				GameState.Player.Team = -1;
 
-			if (!local.GetCar().IsNull() && !local.GetCar().GetBoostComponent().IsNull())
-				GameState.Player.Boost = local.GetCar().GetBoostComponent().GetCurrentBoostAmount();
-			else
-				GameState.Player.Boost = -1;
+			auto car = local.GetCar();
+			if (!car.IsNull()) {
+				auto boostComponent = car.GetBoostComponent();
+				if (!boostComponent.IsNull()) {
+					GameState.Car.Boost = boostComponent.GetCurrentBoostAmount();
+				}
+				else {
+					GameState.Car.Boost = -1;
+				}
+
+				GameState.Car.SuperSonic = car.GetbSuperSonic();
+				GameState.Car.IsOnWall = car.IsOnWall();
+				GameState.Car.IsOnGround = car.IsOnGround();
+				GameState.Car.SpeedKph = (car.GetVelocity().magnitude() * 0.036f) + 0.5f;
+			}
 		}
 		else {
 			GameState.Player.Score = -1;
@@ -138,7 +156,6 @@ void ArtemisGSI::UpdateState(ServerWrapper wrapper)
 			GameState.Player.Saves = -1;
 			GameState.Player.Shots = -1;
 			GameState.Player.Team = -1;
-			GameState.Player.Boost = -1;
 		}
 	}
 
@@ -173,12 +190,13 @@ void ArtemisGSI::ResetStates()
 	GameState.Match.Teams[1].Name = "";
 
 	GameState.Player.Team = -1;
-	GameState.Player.Boost = -1;
 	GameState.Player.Assists = -1;
 	GameState.Player.Goals = -1;
 	GameState.Player.Saves = -1;
 	GameState.Player.Score = -1;
 	GameState.Player.Shots = -1;
+
+	//TODO: reset car
 }
 
 ServerWrapper ArtemisGSI::GetCurrentGameType() {

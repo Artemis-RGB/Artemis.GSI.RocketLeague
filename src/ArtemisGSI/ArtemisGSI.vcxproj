@@ -92,6 +92,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ArtemisCar.cpp" />
     <ClCompile Include="ArtemisColor.cpp" />
     <ClCompile Include="ArtemisGame.cpp" />
     <ClCompile Include="ArtemisMatch.cpp" />
@@ -118,6 +119,7 @@
     <ClCompile Include="ArtemisGSIGUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArtemisCar.h" />
     <ClInclude Include="ArtemisColor.h" />
     <ClInclude Include="ArtemisGame.h" />
     <ClInclude Include="ArtemisMatch.h" />

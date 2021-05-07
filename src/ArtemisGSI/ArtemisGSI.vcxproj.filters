@@ -87,6 +87,9 @@
     <ClCompile Include="ArtemisColor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ArtemisCar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArtemisGSI.h">
@@ -150,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ArtemisColor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ArtemisCar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,11 +5,11 @@
 class ArtemisTeam
 {
 public:
+	std::string Name = "";
 	int Goals = -1;
 	ArtemisColor PrimaryColor;
 	ArtemisColor SecondaryColor;
-	std::string Name = "";
+	ArtemisColor FontColor;
 
 	nlohmann::json GetJson();
 };
-

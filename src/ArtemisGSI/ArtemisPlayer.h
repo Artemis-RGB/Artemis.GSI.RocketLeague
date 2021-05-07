@@ -11,7 +11,9 @@ public:
 	int Assists = -1;
 	int Saves = -1;
 	int Shots = -1;
-	float Boost = -1;
+	int BallTouches = -1;
+	int CarTouches = -1;
+	int Demolishes = -1;
 
 	nlohmann::json GetJson();
 };

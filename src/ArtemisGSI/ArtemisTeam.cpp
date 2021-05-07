@@ -8,5 +8,6 @@ nlohmann::json ArtemisTeam::GetJson()
 	json_team["name"] = Name;
 	json_team["primaryColor"] = PrimaryColor.GetJson();
 	json_team["secondaryColor"] = SecondaryColor.GetJson();
+	json_team["fontColor"] = FontColor.GetJson();
 	return json_team;
 }

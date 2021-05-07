@@ -10,6 +10,8 @@ nlohmann::json ArtemisPlayer::GetJson()
 	json_player["assists"] = Assists;
 	json_player["saves"] = Saves;
 	json_player["shots"] = Shots;
-	json_player["boost"] = Boost * 100.0;
+	json_player["ballTouches"] = BallTouches;
+	json_player["carTouches"] = CarTouches;
+	json_player["demolishes"] = Demolishes;
 	return json_player;
 }

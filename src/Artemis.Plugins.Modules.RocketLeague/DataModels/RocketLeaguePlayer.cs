@@ -11,6 +11,8 @@ namespace Artemis.Plugins.Modules.RocketLeague
         public int Assists { get; set; }
         public int Saves { get; set; }
         public int Shots { get; set; }
-        public float Boost { get; set; }
+        public int BallTouches { get; set; }
+        public int CarTouches { get; set; }
+        public int Demolishes { get; set; }
     }
 }

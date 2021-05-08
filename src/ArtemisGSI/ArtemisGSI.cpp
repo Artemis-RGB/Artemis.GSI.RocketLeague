@@ -51,6 +51,8 @@ void ArtemisGSI::onUnload()
 }
 
 void ArtemisGSI::StartLoop() {
+	cvarManager->log("Starting dedicated thread...");
+
 	while (ok) {
 		gameWrapper->Execute(std::bind(&ArtemisGSI::UpdateMatchState, this));
 		std::string newJson = GameState.GetJson().dump();
@@ -60,6 +62,8 @@ void ArtemisGSI::StartLoop() {
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
 	}
+
+	cvarManager->log("Stopping dedicated thread...");
 }
 
 void ArtemisGSI::UpdateMatchState() {

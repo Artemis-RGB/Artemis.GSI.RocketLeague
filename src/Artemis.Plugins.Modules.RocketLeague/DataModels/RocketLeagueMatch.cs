@@ -17,6 +17,6 @@ namespace Artemis.Plugins.Modules.RocketLeague
         public RocketLeagueTeam OpponentTeam { get; set; }
         public RocketLeagueTeam MyTeam { get; set; }
 
-        public int TotalGoals => Team_0?.Goals ?? 0 + Team_1?.Goals ?? 0;
+        public int TotalGoals => (Team_0?.Goals ?? 0) + (Team_1?.Goals ?? 0);
     }
 }

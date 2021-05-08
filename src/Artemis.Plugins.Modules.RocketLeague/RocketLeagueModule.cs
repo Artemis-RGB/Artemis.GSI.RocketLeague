@@ -37,7 +37,7 @@ namespace Artemis.Plugins.Modules.RocketLeague
             if (DataModel.Player.Team == 0)
             {
                 DataModel.Match.MyTeam = DataModel.Match.Team_0;
-                DataModel.Match.OpponentTeam= DataModel.Match.Team_1;
+                DataModel.Match.OpponentTeam = DataModel.Match.Team_1;
             }
             else
             {

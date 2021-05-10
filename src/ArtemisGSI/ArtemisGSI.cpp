@@ -26,6 +26,11 @@ void ArtemisGSI::onLoad()
 		cvarManager->executeCommand(fmt::format("sleep 1; plugin unload \"{}\"", "ArtemisGSI"));
 		return;
 	}
+
+	//remove trailing slash
+	if(line.back() == '/')
+		line.pop_back();
+
 	cvarManager->log(fmt::format("Artemis webserver file contained {}, starting", line));
 
 	artemisClient = new httplib::Client(line.c_str());

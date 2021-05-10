@@ -9,21 +9,21 @@ void ArtemisGSI::onLoad()
 	const std::string WEBSERVER_FILE = "C:\\ProgramData\\Artemis\\webserver.txt";
 	if (!std::filesystem::exists(WEBSERVER_FILE)) {
 		cvarManager->log("Artemis webserver file not found, exiting...");
-		cvarManager->executeCommand(fmt::format("sleep 2; plugin unload \"{}\"", "ArtemisGSI"));
+		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
 		return;
 	}
 
 	std::ifstream file(WEBSERVER_FILE);
 	if (!file.good()) {
 		cvarManager->log("Artemis webserver file read error, exiting...");
-		cvarManager->executeCommand(fmt::format("sleep 1; plugin unload \"{}\"", "ArtemisGSI"));
+		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
 		return;
 	}
 
 	std::string line;
 	if (!std::getline(file, line)) {
 		cvarManager->log("Artemis webserver file was empty, exiting...");
-		cvarManager->executeCommand(fmt::format("sleep 1; plugin unload \"{}\"", "ArtemisGSI"));
+		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
 		return;
 	}
 
@@ -111,7 +111,7 @@ void ArtemisGSI::SendToArtemis(std::string data) {
 
 	if (!response) {
 		cvarManager->log("Error sending data to Artemis, stopping...");
-		canSendUpdates = false;
+		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
 	}
 }
 

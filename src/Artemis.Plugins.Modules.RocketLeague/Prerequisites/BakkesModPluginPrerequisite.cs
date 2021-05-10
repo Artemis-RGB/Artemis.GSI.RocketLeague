@@ -52,7 +52,7 @@ namespace Artemis.Plugins.Modules.RocketLeague.Prerequisites
 
             InstallActions = new List<PluginPrerequisiteAction>
             {
-                new DownloadFileAction("Download ArtemisGSI plugin", "https://github.com/diogotr7/Artemis.GSI.RocketLeague/releases/latest/download/Artemis.GSI.dll", pluginPath),
+                new DownloadFileAction("Download ArtemisGSI plugin", "https://github.com/diogotr7/Artemis.GSI.RocketLeague/releases/latest/download/ArtemisGSI.dll", pluginPath),
             };
 
             UninstallActions = new List<PluginPrerequisiteAction>

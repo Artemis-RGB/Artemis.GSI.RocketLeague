@@ -11,3 +11,11 @@ nlohmann::json ArtemisGame::GetJson()
 
 	return data;
 }
+
+void ArtemisGame::Reset()
+{
+	Status = GameStatus::Menu;
+	Player.Reset();
+	Match.Reset();
+	Car.Reset();
+}

@@ -1,19 +1,11 @@
 #pragma once
+#include "ArtemisObject.h"
 #include "ArtemisMatch.h"
 #include "ArtemisPlayer.h"
 #include "ArtemisCar.h"
+#include "GameStatus.h"
 
-enum class GameStatus
-{
-	Menu = -1,
-	Replay,
-	InGame,
-	Freeplay,
-	Training,
-	Spectate
-};
-
-class ArtemisGame
+class ArtemisGame : ArtemisObject
 {
 public:
 	ArtemisMatch Match;
@@ -21,6 +13,7 @@ public:
 	ArtemisCar Car;
 	GameStatus Status;
 
+	void Reset();
 	nlohmann::json GetJson();
 };
 

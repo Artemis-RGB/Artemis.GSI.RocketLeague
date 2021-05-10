@@ -11,3 +11,12 @@ nlohmann::json ArtemisTeam::GetJson()
 	json_team["fontColor"] = FontColor.GetJson();
 	return json_team;
 }
+
+void ArtemisTeam::Reset()
+{
+	Name = "";
+	Goals = -1;
+	PrimaryColor.Reset();
+	SecondaryColor.Reset();
+	FontColor.Reset();
+}

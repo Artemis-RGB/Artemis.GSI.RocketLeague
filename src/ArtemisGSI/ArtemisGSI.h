@@ -14,15 +14,14 @@ class ArtemisGSI: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod:
 	virtual void onUnload();
 
 	ArtemisGame GameState;
-	bool ok = true;
+	bool canSendUpdates;
 	std::string json;
 	httplib::Client* artemisClient;
 	void StartLoop();
-	void UpdateMatchState();
+	void Update();
 	void SendToArtemis(std::string data);
-	void UpdateState(ServerWrapper wrapper);
-	void ResetStates();
-	ServerWrapper GetCurrentGameType();
+	void UpdateGameState(ServerWrapper wrapper);
+	ServerWrapper GetCurrentGameWrapperType();
 
 	// Inherited via PluginWindow
 	/*

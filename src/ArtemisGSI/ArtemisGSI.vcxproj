@@ -123,8 +123,10 @@
     <ClInclude Include="ArtemisColor.h" />
     <ClInclude Include="ArtemisGame.h" />
     <ClInclude Include="ArtemisMatch.h" />
+    <ClInclude Include="ArtemisObject.h" />
     <ClInclude Include="ArtemisPlayer.h" />
     <ClInclude Include="ArtemisTeam.h" />
+    <ClInclude Include="GameStatus.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imguivariouscontrols.h" />

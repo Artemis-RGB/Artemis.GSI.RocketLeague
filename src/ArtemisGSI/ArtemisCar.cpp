@@ -13,3 +13,12 @@ nlohmann::json ArtemisCar::GetJson()
 
 	return json_car;
 }
+
+void ArtemisCar::Reset()
+{
+	Boost = -1;
+	SpeedKph = -1;
+	SuperSonic = false;
+	IsOnWall = false;
+	IsOnGround = false;
+}

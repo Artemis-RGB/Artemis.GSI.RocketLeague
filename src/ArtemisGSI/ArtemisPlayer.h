@@ -1,20 +1,21 @@
 #pragma once
-
 #include "lib/json.hpp"
+#include "ArtemisObject.h"
 
-class ArtemisPlayer
+class ArtemisPlayer : ArtemisObject
 {
 public:
-	int Team = -1;
-	int Score = -1;
-	int Goals = -1;
-	int Assists = -1;
-	int Saves = -1;
-	int Shots = -1;
-	int BallTouches = -1;
-	int CarTouches = -1;
-	int Demolishes = -1;
+	int Team;
+	int Score;
+	int Goals;
+	int Assists;
+	int Saves;
+	int Shots;
+	int BallTouches;
+	int CarTouches;
+	int Demolishes;
 
 	nlohmann::json GetJson();
+	void Reset();
 };
 

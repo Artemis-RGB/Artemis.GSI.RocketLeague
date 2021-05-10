@@ -8,6 +8,8 @@ namespace Artemis.Plugins.Modules.RocketLeague
         [DataModelIgnore]
         public int Time { get; set; }
         public TimeSpan TimeRemaining => TimeSpan.FromSeconds(Time);
+        public bool Overtime { get; set; }
+        public bool UnlimitedTime { get; set; }
 
         public RocketLeaguePlaylist Playlist { get; set; }
 

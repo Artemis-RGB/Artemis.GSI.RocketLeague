@@ -158,6 +158,12 @@
     <ClInclude Include="ArtemisCar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ArtemisObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStatus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ArtemisGSI.rc">

@@ -1,14 +1,17 @@
 #pragma once
 #include "lib/json.hpp"
-class ArtemisCar
+#include "ArtemisObject.h"
+
+class ArtemisCar : ArtemisObject
 {
 public:
-	float Boost = -1;
-	float SpeedKph = -1;
-	bool SuperSonic = false;
-	bool IsOnWall = false;
-	bool IsOnGround = false;
+	float Boost;
+	float SpeedKph;
+	bool SuperSonic;
+	bool IsOnWall;
+	bool IsOnGround;
 
 	nlohmann::json GetJson();
+	void Reset();
 };
 

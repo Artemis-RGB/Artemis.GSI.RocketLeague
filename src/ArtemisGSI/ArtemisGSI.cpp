@@ -3,11 +3,35 @@
 
 BAKKESMOD_PLUGIN(ArtemisGSI, "Artemis RGB integration", plugin_version, PLUGINTYPE_THREADED)
 
+
 void ArtemisGSI::onLoad()
 {
-	artemisClient = new httplib::Client("http://localhost:9696");
+	const std::string WEBSERVER_FILE = "C:\\ProgramData\\Artemis\\webserver.txt";
+	if (!std::filesystem::exists(WEBSERVER_FILE)) {
+		cvarManager->log("Artemis webserver file not found, exiting...");
+		cvarManager->executeCommand(fmt::format("sleep 2; plugin unload \"{}\"", "ArtemisGSI"));
+		return;
+	}
+
+	std::ifstream file(WEBSERVER_FILE);
+	if (!file.good()) {
+		cvarManager->log("Artemis webserver file read error, exiting...");
+		cvarManager->executeCommand(fmt::format("sleep 1; plugin unload \"{}\"", "ArtemisGSI"));
+		return;
+	}
+
+	std::string line;
+	if (!std::getline(file, line)) {
+		cvarManager->log("Artemis webserver file was empty, exiting...");
+		cvarManager->executeCommand(fmt::format("sleep 1; plugin unload \"{}\"", "ArtemisGSI"));
+		return;
+	}
+	cvarManager->log(fmt::format("Artemis webserver file contained {}, starting", line));
+
+	artemisClient = new httplib::Client(line.c_str());
 	artemisClient->set_connection_timeout(0, 50000);
 
+	canSendUpdates = true;
 	std::thread t(&ArtemisGSI::StartLoop, this);
 	t.detach();
 
@@ -47,14 +71,14 @@ void ArtemisGSI::onLoad()
 
 void ArtemisGSI::onUnload()
 {
-	ok = false;
+	canSendUpdates = false;
 }
 
 void ArtemisGSI::StartLoop() {
 	cvarManager->log("Starting dedicated thread...");
 
-	while (ok) {
-		gameWrapper->Execute(std::bind(&ArtemisGSI::UpdateMatchState, this));
+	while (canSendUpdates) {
+		gameWrapper->Execute(std::bind(&ArtemisGSI::Update, this));
 		std::string newJson = GameState.GetJson().dump();
 		if (newJson != json) {
 			json = newJson;
@@ -66,13 +90,13 @@ void ArtemisGSI::StartLoop() {
 	cvarManager->log("Stopping dedicated thread...");
 }
 
-void ArtemisGSI::UpdateMatchState() {
-	ServerWrapper wrapper = GetCurrentGameType();//this sets type (-1 for menu)
+void ArtemisGSI::Update() {
+	ServerWrapper wrapper = GetCurrentGameWrapperType();
 
 	if (!wrapper.IsNull())
-		this->UpdateState(wrapper);
+		this->UpdateGameState(wrapper);
 	else
-		this->ResetStates();
+		GameState.Reset();
 
 	return;
 }
@@ -82,13 +106,15 @@ void ArtemisGSI::SendToArtemis(std::string data) {
 
 	if (!response) {
 		cvarManager->log("Error sending data to Artemis, stopping...");
-		ok = false;
+		canSendUpdates = false;
 	}
 }
 
-void ArtemisGSI::UpdateState(ServerWrapper wrapper)
+void ArtemisGSI::UpdateGameState(ServerWrapper wrapper)
 {
-	if (!wrapper.GetbUnlimitedTime() && !wrapper.GetbOverTime())
+	GameState.Match.Overtime = wrapper.GetbOverTime();
+	GameState.Match.UnlimitedTime = wrapper.GetbUnlimitedTime();
+	if (!GameState.Match.Overtime && !GameState.Match.UnlimitedTime)
 		GameState.Match.Time = wrapper.GetSecondsRemaining();
 	else
 		GameState.Match.Time = -1;
@@ -166,63 +192,30 @@ void ArtemisGSI::UpdateState(ServerWrapper wrapper)
 		GameState.Match.Playlist = -1;
 }
 
-void ArtemisGSI::ResetStates()
-{
-	GameState.Status = GameStatus::Menu;
-
-	GameState.Match.Playlist = -1;
-	GameState.Match.Time = -1;
-	GameState.Match.Teams[0].Goals = -1;
-	GameState.Match.Teams[0].PrimaryColor.Red = -1;
-	GameState.Match.Teams[0].PrimaryColor.Green = -1;
-	GameState.Match.Teams[0].PrimaryColor.Blue = -1;
-	GameState.Match.Teams[0].SecondaryColor.Red = -1;
-	GameState.Match.Teams[0].SecondaryColor.Green = -1;
-	GameState.Match.Teams[0].SecondaryColor.Blue = -1;
-	GameState.Match.Teams[0].Name = "";
-	GameState.Match.Teams[1].Goals = -1;
-	GameState.Match.Teams[1].PrimaryColor.Red = -1;
-	GameState.Match.Teams[1].PrimaryColor.Green = -1;
-	GameState.Match.Teams[1].PrimaryColor.Blue = -1;
-	GameState.Match.Teams[1].SecondaryColor.Red = -1;
-	GameState.Match.Teams[1].SecondaryColor.Green = -1;
-	GameState.Match.Teams[1].SecondaryColor.Blue = -1;
-	GameState.Match.Teams[1].Name = "";
-
-	GameState.Player.Team = -1;
-	GameState.Player.Assists = -1;
-	GameState.Player.Goals = -1;
-	GameState.Player.Saves = -1;
-	GameState.Player.Score = -1;
-	GameState.Player.Shots = -1;
-
-	//TODO: reset car
-}
-
-ServerWrapper ArtemisGSI::GetCurrentGameType() {
-	if (this->gameWrapper->IsInOnlineGame()) {
+ServerWrapper ArtemisGSI::GetCurrentGameWrapperType() {
+	if (gameWrapper->IsInOnlineGame()) {
 		GameState.Status = GameStatus::InGame;
-		return this->gameWrapper->GetOnlineGame();
+		return gameWrapper->GetOnlineGame();
 	}
-	else if (this->gameWrapper->IsSpectatingInOnlineGame()) {
+	else if (gameWrapper->IsSpectatingInOnlineGame()) {
 		GameState.Status = GameStatus::Spectate;
-		return this->gameWrapper->GetOnlineGame();
+		return gameWrapper->GetOnlineGame();
 	}
-	else if (this->gameWrapper->IsInReplay()) {
+	else if (gameWrapper->IsInReplay()) {
 		GameState.Status = GameStatus::Replay;
-		return this->gameWrapper->GetGameEventAsReplay();
+		return gameWrapper->GetGameEventAsReplay();
 	}
-	else if (this->gameWrapper->IsInFreeplay()) {
+	else if (gameWrapper->IsInFreeplay()) {
 		GameState.Status = GameStatus::Freeplay;
-		return this->gameWrapper->GetGameEventAsServer();
+		return gameWrapper->GetGameEventAsServer();
 	}
-	else if (this->gameWrapper->IsInCustomTraining()) {
+	else if (gameWrapper->IsInCustomTraining()) {
 		GameState.Status = GameStatus::Training;
-		return this->gameWrapper->GetGameEventAsServer();
+		return gameWrapper->GetGameEventAsServer();
 	}
-	else if (this->gameWrapper->IsInGame()) {
+	else if (gameWrapper->IsInGame()) {
 		GameState.Status = GameStatus::InGame;
-		return this->gameWrapper->GetGameEventAsServer();
+		return gameWrapper->GetGameEventAsServer();
 	}
 	else {
 		GameState.Status = GameStatus::Menu;

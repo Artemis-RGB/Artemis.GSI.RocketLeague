@@ -15,3 +15,16 @@ nlohmann::json ArtemisPlayer::GetJson()
 	json_player["demolishes"] = Demolishes;
 	return json_player;
 }
+
+void ArtemisPlayer::Reset()
+{
+	Team = -1;
+	Score = -1;
+	Goals = -1;
+	Assists = -1;
+	Saves = -1;
+	Shots = -1;
+	BallTouches = -1;
+	CarTouches = -1;
+	Demolishes = -1;
+}

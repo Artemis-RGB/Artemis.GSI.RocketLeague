@@ -1,8 +1,6 @@
-﻿using Artemis.Core;
-using Artemis.Core.Modules;
+﻿using Artemis.Core.Modules;
 using Artemis.Core.Services;
 using SkiaSharp;
-using System;
 
 namespace Artemis.Plugins.Modules.RocketLeague
 {
@@ -22,7 +20,7 @@ namespace Artemis.Plugins.Modules.RocketLeague
             DefaultPriorityCategory = ModulePriorityCategory.Application;
             ActivationRequirements.Add(new ProcessActivationRequirement("RocketLeague"));
 
-            var request = _webServerService.AddDataModelJsonEndPoint(this, "update");
+            DataModelJsonPluginEndPoint<RocketLeagueDataModel> request = _webServerService.AddDataModelJsonEndPoint(this, "update");
             request.ProcessedRequest += OnProcessedRequest;
         }
 

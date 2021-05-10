@@ -1,5 +1,4 @@
 ﻿using Artemis.Core.DataModelExpansions;
-using SkiaSharp;
 using System;
 
 namespace Artemis.Plugins.Modules.RocketLeague

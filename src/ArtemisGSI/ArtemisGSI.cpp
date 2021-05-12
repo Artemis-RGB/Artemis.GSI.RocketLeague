@@ -3,7 +3,6 @@
 
 BAKKESMOD_PLUGIN(ArtemisGSI, "Artemis RGB integration", plugin_version, PLUGINTYPE_THREADED)
 
-
 void ArtemisGSI::onLoad()
 {
 	const std::string WEBSERVER_FILE = "C:\\ProgramData\\Artemis\\webserver.txt";
@@ -31,7 +30,7 @@ void ArtemisGSI::onLoad()
 	if(line.back() == '/')
 		line.pop_back();
 
-	cvarManager->log(fmt::format("Artemis webserver file contained {}, starting", line));
+	cvarManager->log("Artemis client starting with url " + line);
 
 	artemisClient = new httplib::Client(line.c_str());
 	artemisClient->set_connection_timeout(0, 50000);
@@ -39,39 +38,6 @@ void ArtemisGSI::onLoad()
 	canSendUpdates = true;
 	std::thread t(&ArtemisGSI::StartLoop, this);
 	t.detach();
-
-	//cvarManager->log("Plugin loaded!");
-
-	//cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
-	//	cvarManager->log("Hello notifier!");
-	//}, "", 0);
-
-	//auto cvar = cvarManager->registerCvar("template_cvar", "hello-cvar", "just a example of a cvar");
-	//auto cvar2 = cvarManager->registerCvar("template_cvar2", "0", "just a example of a cvar with more settings", true, true, -10, true, 10 );
-
-	//cvar.addOnValueChanged([this](std::string cvarName, CVarWrapper newCvar) {
-	//	cvarManager->log("the cvar with name: " + cvarName + " changed");
-	//	cvarManager->log("the new value is:" + newCvar.getStringValue());
-	//});
-
-	//cvar2.addOnValueChanged(std::bind(&ArtemisGSI::YourPluginMethod, this, _1, _2));
-
-	// enabled decleared in the header
-	//enabled = std::make_shared<bool>(false);
-	//cvarManager->registerCvar("TEMPLATE_Enabled", "0", "Enable the TEMPLATE plugin", true, true, 0, true, 1).bindTo(enabled);
-
-	//cvarManager->registerNotifier("NOTIFIER", [this](std::vector<std::string> params){FUNCTION();}, "DESCRIPTION", PERMISSION_ALL);
-	//cvarManager->registerCvar("CVAR", "DEFAULTVALUE", "DESCRIPTION", true, true, MINVAL, true, MAXVAL);//.bindTo(CVARVARIABLE);
-	//gameWrapper->HookEvent("FUNCTIONNAME", std::bind(&TEMPLATE::FUNCTION, this));
-	//gameWrapper->HookEventWithCallerPost<ActorWrapper>("FUNCTIONNAME", std::bind(&ArtemisGSI::FUNCTION, this, _1, _2, _3));
-	//gameWrapper->RegisterDrawable(bind(&TEMPLATE::Render, this, std::placeholders::_1));
-
-
-	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", [this](std::string eventName) {
-	//	cvarManager->log("Your hook got called and the ball went POOF");
-	//});
-	// You could also use std::bind here
-	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", std::bind(&ArtemisGSI::YourPluginMethod, this);
 }
 
 void ArtemisGSI::onUnload()
@@ -102,8 +68,6 @@ void ArtemisGSI::Update() {
 		this->UpdateGameState(wrapper);
 	else
 		GameState.Reset();
-
-	return;
 }
 
 void ArtemisGSI::SendToArtemis(std::string data) {
@@ -124,7 +88,7 @@ void ArtemisGSI::UpdateGameState(ServerWrapper wrapper)
 	else
 		GameState.Match.Time = -1;
 
-	ArrayWrapper<TeamWrapper> teams = wrapper.GetTeams();
+	auto teams = wrapper.GetTeams();
 	for (int i = 0; i < teams.Count(); i++) {
 
 		auto team = teams.Get(i);
@@ -137,13 +101,9 @@ void ArtemisGSI::UpdateGameState(ServerWrapper wrapper)
 		else
 			GameState.Match.Teams[i].Name = i == 0 ? "Blue" : "Orange";
 
-		auto primaryColor = team.GetPrimaryColor();
-		auto secondaryColor = team.GetSecondaryColor();
-		auto fontColor = team.GetFontColor();
-
-		GameState.Match.Teams[i].PrimaryColor.SetValues(primaryColor);
-		GameState.Match.Teams[i].SecondaryColor.SetValues(secondaryColor);
-		GameState.Match.Teams[i].FontColor.SetValues(fontColor);
+		GameState.Match.Teams[i].PrimaryColor.SetValues(team.GetPrimaryColor());
+		GameState.Match.Teams[i].SecondaryColor.SetValues(team.GetSecondaryColor());
+		GameState.Match.Teams[i].FontColor.SetValues(team.GetFontColor());
 	}
 
 	auto localController = this->gameWrapper->GetPlayerController();
@@ -191,7 +151,7 @@ void ArtemisGSI::UpdateGameState(ServerWrapper wrapper)
 	}
 
 	GameSettingPlaylistWrapper playlistWrapper = wrapper.GetPlaylist();
-	if (playlistWrapper.memory_address != NULL)
+	if (!playlistWrapper.IsNull())
 		GameState.Match.Playlist = playlistWrapper.GetPlaylistId();
 	else
 		GameState.Match.Playlist = -1;

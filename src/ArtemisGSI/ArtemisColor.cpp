@@ -21,7 +21,7 @@ void ArtemisColor::Reset()
 
 void ArtemisColor::SetValues(LinearColor source)
 {
-    Red = source.R * 255.0;
-    Green = source.G * 255.0;
-    Blue = source.B * 255.0;
+    Red = (unsigned char)(source.R * 255.0);
+    Green = (unsigned char)(source.G * 255.0);
+    Blue = (unsigned char)(source.B * 255.0);
 }

@@ -20,7 +20,7 @@ namespace Artemis.Plugins.Modules.RocketLeague.Prerequisites
 
         public override bool IsMet()
         {
-            using RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\BakkesMod\AppPath", false);
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\BakkesMod\AppPath");
             if (key == null)
             {
                 return false;
@@ -52,7 +52,7 @@ namespace Artemis.Plugins.Modules.RocketLeague.Prerequisites
 
             InstallActions = new List<PluginPrerequisiteAction>
             {
-                new DownloadFileAction("Download ArtemisGSI plugin", "https://github.com/diogotr7/Artemis.GSI.RocketLeague/releases/latest/download/ArtemisGSI.dll", pluginPath),
+                new ExecuteFileAction("Install BakkesMod Plugin", "bakkesmod://install/230")
             };
 
             UninstallActions = new List<PluginPrerequisiteAction>

@@ -20,7 +20,7 @@ namespace Artemis.Plugins.Modules.RocketLeague.Prerequisites
         public override bool IsMet()
         {
             const string registryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{BF029534-4334-4CFC-B771-50B7EE54346F}_is1";
-            using RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath, false);
+            using RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath);
 
             return key != null;
         }

@@ -8,6 +8,8 @@ namespace Artemis.Plugins.Modules.RocketLeague
     {
         private readonly IWebServerService _webServerService;
 
+        private DataModelJsonPluginEndPoint<RocketLeagueDataModel> _updateEndpoint;
+
         public RocketLeagueModule(IWebServerService webServerService)
         {
             _webServerService = webServerService;
@@ -20,8 +22,8 @@ namespace Artemis.Plugins.Modules.RocketLeague
             DefaultPriorityCategory = ModulePriorityCategory.Application;
             ActivationRequirements.Add(new ProcessActivationRequirement("RocketLeague"));
 
-            DataModelJsonPluginEndPoint<RocketLeagueDataModel> request = _webServerService.AddDataModelJsonEndPoint(this, "update");
-            request.ProcessedRequest += OnProcessedRequest;
+            _updateEndpoint = _webServerService.AddDataModelJsonEndPoint(this, "update");
+            _updateEndpoint.ProcessedRequest += OnProcessedRequest;
         }
 
         private void OnProcessedRequest(object sender, EndpointRequestEventArgs e)
@@ -46,6 +48,8 @@ namespace Artemis.Plugins.Modules.RocketLeague
 
         public override void Disable()
         {
+            _updateEndpoint.ProcessedRequest -= OnProcessedRequest;
+            _webServerService.RemovePluginEndPoint(_updateEndpoint);
         }
 
         public override void ModuleActivated(bool isOverride)

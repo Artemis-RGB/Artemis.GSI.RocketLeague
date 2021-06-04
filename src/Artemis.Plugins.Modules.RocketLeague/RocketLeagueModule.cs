@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace Artemis.Plugins.Modules.RocketLeague
 {
-    public class RocketLeagueModule : ProfileModule<RocketLeagueDataModel>
+    public class RocketLeagueModule : Module<RocketLeagueDataModel>
     {
         private readonly IWebServerService _webServerService;
 
@@ -12,16 +12,15 @@ namespace Artemis.Plugins.Modules.RocketLeague
 
         public RocketLeagueModule(IWebServerService webServerService)
         {
+            DisplayName = "Rocket League";
+            DisplayIcon = "RocketLeague.svg";
+            ActivationRequirements.Add(new ProcessActivationRequirement("RocketLeague"));
+
             _webServerService = webServerService;
         }
 
         public override void Enable()
         {
-            DisplayName = "Rocket League";
-            DisplayIcon = "RocketLeague.svg";
-            DefaultPriorityCategory = ModulePriorityCategory.Application;
-            ActivationRequirements.Add(new ProcessActivationRequirement("RocketLeague"));
-
             _updateEndpoint = _webServerService.AddDataModelJsonEndPoint(this, "update");
             _updateEndpoint.ProcessedRequest += OnProcessedRequest;
         }
@@ -61,10 +60,6 @@ namespace Artemis.Plugins.Modules.RocketLeague
         }
 
         public override void Update(double deltaTime)
-        {
-        }
-
-        public override void Render(double deltaTime, SKCanvas canvas, SKImageInfo canvasInfo)
         {
         }
     }

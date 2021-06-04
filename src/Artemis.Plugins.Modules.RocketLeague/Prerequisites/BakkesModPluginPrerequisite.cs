@@ -12,8 +12,6 @@ namespace Artemis.Plugins.Modules.RocketLeague.Prerequisites
 
         public override string Description => "Plugin for BakkesMod responsible for sending data to Artemis";
 
-        public override bool RequiresElevation => false;
-
         public override List<PluginPrerequisiteAction> InstallActions { get; }
 
         public override List<PluginPrerequisiteAction> UninstallActions { get; }

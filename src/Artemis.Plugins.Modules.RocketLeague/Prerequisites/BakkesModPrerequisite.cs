@@ -11,8 +11,6 @@ namespace Artemis.Plugins.Modules.RocketLeague.Prerequisites
 
         public override string Description => "Mod for Rocket League required for game state integration.";
 
-        public override bool RequiresElevation => false;
-
         public override List<PluginPrerequisiteAction> InstallActions { get; }
 
         public override List<PluginPrerequisiteAction> UninstallActions { get; }

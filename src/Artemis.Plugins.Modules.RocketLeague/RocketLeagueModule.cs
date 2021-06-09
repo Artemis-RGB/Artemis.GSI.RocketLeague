@@ -1,21 +1,22 @@
 ﻿using Artemis.Core.Modules;
 using Artemis.Core.Services;
+using Artemis.Core;
 using SkiaSharp;
+using System.Collections.Generic;
 
 namespace Artemis.Plugins.Modules.RocketLeague
 {
+    [PluginFeature(AlwaysEnabled = true, Name = "Rocket League", Icon = "RocketLeague.svg")]
     public class RocketLeagueModule : Module<RocketLeagueDataModel>
     {
         private readonly IWebServerService _webServerService;
 
         private DataModelJsonPluginEndPoint<RocketLeagueDataModel> _updateEndpoint;
 
+        public override List<IModuleActivationRequirement> ActivationRequirements { get; } = new() { new ProcessActivationRequirement("RocketLeague") };
+
         public RocketLeagueModule(IWebServerService webServerService)
         {
-            DisplayName = "Rocket League";
-            DisplayIcon = "RocketLeague.svg";
-            ActivationRequirements.Add(new ProcessActivationRequirement("RocketLeague"));
-
             _webServerService = webServerService;
         }
 

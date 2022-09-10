@@ -26,7 +26,7 @@ jobs:
       run: msbuild /m /p:Configuration=Release /p:BakkesModPath=$env:GITHUB_WORKSPACE\plugin /p:Environment=GitHub $env:GITHUB_WORKSPACE\plugin\src\Artemis.GSI.RocketLeague.sln
 
     - name: Upload BakkesMod Plugin
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ArtemisGSI
-        path: .\src\plugins\ArtemisGSI.dll
+        path: .\plugin\src\plugins\ArtemisGSI.dll

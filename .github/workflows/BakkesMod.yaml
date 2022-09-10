@@ -1,34 +1,32 @@
 name: BakkesMod plugin
 
-on: [push]
+on: push
 
 jobs:
 
   build:
-    runs-on: [windows-latest]
+    runs-on: windows-latest
 
     steps:
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        path: plugin
 
     - name: Checkout BakkesMod SDK
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: bakkesmodorg/BakkesModSDK
-        path: bakkesmodsdk
+        path: plugin\bakkesmodsdk
 
-    - name: Fix path
-      shell: powershell
-      run: (Get-Content '.\src\ArtemisGSI\BakkesMod.props').Replace('$(registry:HKEY_CURRENT_USER\Software\BakkesMod\AppPath@BakkesModPath)','$(ProjectDir)\..\..\') | Set-Content '.\src\ArtemisGSI\BakkesMod.props'
-
-    - name: Build BakkesMod Plugin
-      run: MSBuild.exe .\src\ArtemisGSI\ArtemisGSI.vcxproj /p:Platform=x64 /p:Configuration=Release
+    - name: Build
+      run: msbuild /m /p:Configuration=Release /p:BakkesModPath=$env:GITHUB_WORKSPACE\plugin /p:Environment=GitHub $env:GITHUB_WORKSPACE\plugin\src\Artemis.GSI.RocketLeague.sln
 
     - name: Upload BakkesMod Plugin
       uses: actions/upload-artifact@v2
       with:
         name: ArtemisGSI
-        path: .\src\ArtemisGSI\plugins\ArtemisGSI.dll
+        path: .\src\plugins\ArtemisGSI.dll

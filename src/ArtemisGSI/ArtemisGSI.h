@@ -5,6 +5,7 @@
 #include "ArtemisGame.h"
 #include "lib/httplib.h"
 #include "version.h"
+#include <optional>
 
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
 
@@ -14,14 +15,16 @@ class ArtemisGSI: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod:
 	virtual void onUnload();
 
 	ArtemisGame GameState;
-	bool canSendUpdates;
+	std::unique_ptr<httplib::Client> artemisClient;
 	std::string json;
-	httplib::Client* artemisClient;
+	bool canSendUpdates;
+
+	std::optional<std::string> FindEndpoint();
 	void StartLoop();
 	void Update();
-	void SendToArtemis(std::string data);
+	void SendToArtemis(const char* endpoint, const char* data);
 	void UpdateGameState(ServerWrapper wrapper);
-	ServerWrapper GetCurrentGameWrapperType();
+	ServerWrapper GetCurrentGameWrapper();
 
 	// Inherited via PluginWindow
 	/*

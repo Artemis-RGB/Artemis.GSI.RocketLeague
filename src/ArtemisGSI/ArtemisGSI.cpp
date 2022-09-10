@@ -1,39 +1,42 @@
 #include "pch.h"
 #include "ArtemisGSI.h"
+#include <optional>
+
+constexpr auto WEBSERVER_FILE_PATH = "C:\\ProgramData\\Artemis\\webserver.txt";
+constexpr auto ARTEMIS_PLUGIN_GUID = "945dc0aa-7ee3-47ec-9be6-f378fb7cb7b0";
+constexpr auto UPDATE_ENDPOINT = "/plugins/945dc0aa-7ee3-47ec-9be6-f378fb7cb7b0/update";
+constexpr auto PLUGINLIST_ENDPOINT = "/plugins/endpoints";
 
 BAKKESMOD_PLUGIN(ArtemisGSI, "Artemis RGB integration", plugin_version, PLUGINTYPE_THREADED)
 
 void ArtemisGSI::onLoad()
 {
-	const std::string WEBSERVER_FILE = "C:\\ProgramData\\Artemis\\webserver.txt";
-	if (!std::filesystem::exists(WEBSERVER_FILE)) {
-		cvarManager->log("Artemis webserver file not found, exiting...");
-		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
+	auto endpointOptional = FindEndpoint();
+	if (!endpointOptional.has_value())
+	{
+		cvarManager->executeCommand("sleep 0; plugin unload artemisgsi");
 		return;
 	}
 
-	std::ifstream file(WEBSERVER_FILE);
-	if (!file.good()) {
-		cvarManager->log("Artemis webserver file read error, exiting...");
-		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
-		return;
-	}
+	auto endpoint = endpointOptional.value();
+	cvarManager->log("Artemis client starting with url " + endpoint);
 
-	std::string line;
-	if (!std::getline(file, line)) {
-		cvarManager->log("Artemis webserver file was empty, exiting...");
-		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
-		return;
-	}
-
-	//remove trailing slash
-	if(line.back() == '/')
-		line.pop_back();
-
-	cvarManager->log("Artemis client starting with url " + line);
-
-	artemisClient = new httplib::Client(line.c_str());
+	artemisClient = std::make_unique<httplib::Client>(endpoint.data());
 	artemisClient->set_connection_timeout(0, 50000);
+
+	auto testRequest = artemisClient->Get(PLUGINLIST_ENDPOINT);
+	if (!testRequest)
+	{
+		cvarManager->log("Test request failed, Artemis not running.");
+		cvarManager->executeCommand("sleep 0; plugin unload artemisgsi");
+		return;
+	}
+	if (testRequest.value().body.find(ARTEMIS_PLUGIN_GUID) == std::string::npos)
+	{
+		cvarManager->log("Test request failed, Artemis does not have the required plugin loaded.");
+		cvarManager->executeCommand("sleep 0; plugin unload artemisgsi");
+		return;
+	}
 
 	canSendUpdates = true;
 	std::thread t(&ArtemisGSI::StartLoop, this);
@@ -45,6 +48,31 @@ void ArtemisGSI::onUnload()
 	canSendUpdates = false;
 }
 
+std::optional<std::string> ArtemisGSI::FindEndpoint() {
+	if (!std::filesystem::exists(WEBSERVER_FILE_PATH)) {
+		cvarManager->log("Artemis webserver file not found, exiting...");
+		return std::nullopt;
+	}
+
+	std::ifstream file(WEBSERVER_FILE_PATH);
+	if (!file.good()) {
+		cvarManager->log("Artemis webserver file read error, exiting...");
+		return std::nullopt;
+	}
+
+	std::string artemisServerUri;
+	if (!std::getline(file, artemisServerUri)) {
+		cvarManager->log("Artemis webserver file was empty, exiting...");
+		return std::nullopt;
+	}
+
+	//remove trailing slash
+	if (artemisServerUri.back() == '/')
+		artemisServerUri.pop_back();
+
+	return artemisServerUri;
+}
+
 void ArtemisGSI::StartLoop() {
 	cvarManager->log("Starting dedicated thread...");
 
@@ -53,7 +81,7 @@ void ArtemisGSI::StartLoop() {
 		std::string newJson = GameState.GetJson().dump();
 		if (newJson != json) {
 			json = newJson;
-			SendToArtemis(json);
+			SendToArtemis(UPDATE_ENDPOINT, json.data());
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 30));
 	}
@@ -62,7 +90,7 @@ void ArtemisGSI::StartLoop() {
 }
 
 void ArtemisGSI::Update() {
-	ServerWrapper wrapper = GetCurrentGameWrapperType();
+	ServerWrapper wrapper = GetCurrentGameWrapper();
 
 	if (!wrapper.IsNull())
 		this->UpdateGameState(wrapper);
@@ -70,12 +98,12 @@ void ArtemisGSI::Update() {
 		GameState.Reset();
 }
 
-void ArtemisGSI::SendToArtemis(std::string data) {
-	auto response = artemisClient->Post("/plugins/945dc0aa-7ee3-47ec-9be6-f378fb7cb7b0/update", data, "application/json");
+void ArtemisGSI::SendToArtemis(const char* endpoint, const char* data) {
+	auto response = artemisClient->Post(endpoint, data, "application/json");
 
 	if (!response) {
 		cvarManager->log("Error sending data to Artemis, stopping...");
-		cvarManager->executeCommand("sleep 1; plugin unload artemisgsi");
+		cvarManager->executeCommand("sleep 0; plugin unload artemisgsi");
 	}
 }
 
@@ -118,11 +146,7 @@ void ArtemisGSI::UpdateGameState(ServerWrapper wrapper)
 			GameState.Player.BallTouches = local.GetBallTouches();
 			GameState.Player.CarTouches = local.GetCarTouches();
 			GameState.Player.Demolishes = local.GetMatchDemolishes();
-
-			if (!local.GetTeam().IsNull())
-				GameState.Player.Team = local.GetTeam().GetTeamIndex();
-			else
-				GameState.Player.Team = -1;
+			GameState.Player.Team = local.GetTeamNum();
 
 			auto car = local.GetCar();
 			if (!car.IsNull()) {
@@ -157,14 +181,14 @@ void ArtemisGSI::UpdateGameState(ServerWrapper wrapper)
 		GameState.Match.Playlist = -1;
 }
 
-ServerWrapper ArtemisGSI::GetCurrentGameWrapperType() {
-	if (gameWrapper->IsInOnlineGame()) {
-		GameState.Status = GameStatus::InGame;
-		return gameWrapper->GetOnlineGame();
-	}
-	else if (gameWrapper->IsSpectatingInOnlineGame()) {
+ServerWrapper ArtemisGSI::GetCurrentGameWrapper() {
+	if (gameWrapper->IsSpectatingInOnlineGame()) {
 		GameState.Status = GameStatus::Spectate;
 		return gameWrapper->GetOnlineGame();
+	}
+	else  if (gameWrapper->IsInCustomTraining()) {
+		GameState.Status = GameStatus::Training;
+		return gameWrapper->GetGameEventAsServer();
 	}
 	else if (gameWrapper->IsInReplay()) {
 		GameState.Status = GameStatus::Replay;
@@ -174,9 +198,9 @@ ServerWrapper ArtemisGSI::GetCurrentGameWrapperType() {
 		GameState.Status = GameStatus::Freeplay;
 		return gameWrapper->GetGameEventAsServer();
 	}
-	else if (gameWrapper->IsInCustomTraining()) {
-		GameState.Status = GameStatus::Training;
-		return gameWrapper->GetGameEventAsServer();
+	else if (gameWrapper->IsInOnlineGame()) {
+		GameState.Status = GameStatus::InGame;
+		return gameWrapper->GetOnlineGame();
 	}
 	else if (gameWrapper->IsInGame()) {
 		GameState.Status = GameStatus::InGame;

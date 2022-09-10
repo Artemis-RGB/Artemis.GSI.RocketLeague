@@ -182,11 +182,7 @@ void ArtemisGSI::UpdateGameState(ServerWrapper wrapper)
 }
 
 ServerWrapper ArtemisGSI::GetCurrentGameWrapper() {
-	if (gameWrapper->IsSpectatingInOnlineGame()) {
-		GameState.Status = GameStatus::Spectate;
-		return gameWrapper->GetOnlineGame();
-	}
-	else  if (gameWrapper->IsInCustomTraining()) {
+	if (gameWrapper->IsInCustomTraining()) {
 		GameState.Status = GameStatus::Training;
 		return gameWrapper->GetGameEventAsServer();
 	}

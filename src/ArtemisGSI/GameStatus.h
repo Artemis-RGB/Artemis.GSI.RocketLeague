@@ -5,6 +5,5 @@ enum GameStatus
 	Replay,
 	InGame,
 	Freeplay,
-	Training,
-	Spectate
+	Training
 };
